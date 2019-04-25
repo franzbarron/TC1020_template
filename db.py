@@ -1,4 +1,5 @@
 import pymysql
+import sys
 
 class Database:
     def __init__(self):
@@ -18,10 +19,32 @@ class Database:
         self.cur = self.con.cursor()
 
     def list_members(self):
-        self.cur.execute('''
-                            SELECT * 
-                            FROM Member
-                        ''')
+        query = '''
+                SELECT * 
+                FROM Member
+                '''
+        print('Query: {}'.format(query), file=sys.stdout)
+        self.cur.execute(query)
+        result = self.cur.fetchall()
+
+        return result
+
+    def list_member(self, member_no, member_name):
+        if member_no == '':
+            print('isnill!!!!!!!!!!!!! {}', file=sys.stdout)
+        query = '''
+                SELECT *
+                FROM Member
+                '''
+        if member_no != '':
+            query += 'WHERE memberNo = {}'.format(member_no)
+            if member_name != '':
+                query += 'AND fName = \'{}\''.format(member_name)
+        elif member_name != '':
+            query += 'WHERE fName = \'{}\''.format(member_name)
+
+        print('Query: {}'.format(query), file=sys.stdout)
+        self.cur.execute(query)
         result = self.cur.fetchall()
 
         return result
@@ -34,30 +57,32 @@ class Database:
 
 
     def top_and_bottom_clients(self):
-        self.cur.execute('''
-                        select CONCAT(fName,' ',lName) Nombre,
-                               'Con mas videos rentados' AS Posicion
-                        from Member
-                        where memberNo in
-                        (select memberNo
-                        from RentalAgreement
-                        group by memberNo
-                        having count(videoNo) >= all
-                                  (select count(videoNo)
-                                   from RentalAgreement
-                                   group by memberNo))
-                        UNION
-                        select CONCAT(fName,' ',lName)Nombre, 'Con menos videos rentados' AS Posicion
-                        from Member
-                        where memberNo in
-                        (select memberNo
-                        from RentalAgreement
-                        group by memberNo
-                        having count(videoNo) <= all
-                                  (select count(videoNo)
-                                   from RentalAgreement
-                                   group by memberNo))
-                        ''')
+        query = '''
+                select CONCAT(fName,' ',lName) Nombre,
+                       'Con mas videos rentados' AS Posicion
+                from Member
+                where memberNo in
+                (select memberNo
+                from RentalAgreement
+                group by memberNo
+                having count(videoNo) >= all
+                          (select count(videoNo)
+                           from RentalAgreement
+                           group by memberNo))
+                UNION
+                select CONCAT(fName,' ',lName)Nombre, 'Con menos videos rentados' AS Posicion
+                from Member
+                where memberNo in
+                (select memberNo
+                from RentalAgreement
+                group by memberNo
+                having count(videoNo) <= all
+                          (select count(videoNo)
+                           from RentalAgreement
+                           group by memberNo))
+                '''
+        print('Query: {}'.format(query), file=sys.stdout)
+        self.cur.execute(query)
         result = self.cur.fetchall()
 
         return result
