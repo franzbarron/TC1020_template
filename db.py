@@ -29,6 +29,7 @@ class Database:
 
         return result
 
+
     def list_member(self, member_no, member_name):
         query = '''
                 SELECT *
@@ -47,6 +48,7 @@ class Database:
 
         return result
 
+
     def insert_member(self, fName, lName, sex, dob, address):
         query = '''
                 INSERT INTO Member (fName, lName, sex, DOB, address, dateJoined)
@@ -55,6 +57,7 @@ class Database:
         print('Query: {}'.format(query), file=sys.stdout)
         self.cur.execute(query)
         self.con.commit()
+
 
     def delete_member(self, member_no):
         query = '''
