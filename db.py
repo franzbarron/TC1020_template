@@ -30,8 +30,6 @@ class Database:
         return result
 
     def list_member(self, member_no, member_name):
-        if member_no == '':
-            print('isnill!!!!!!!!!!!!! {}', file=sys.stdout)
         query = '''
                 SELECT *
                 FROM Member
@@ -48,6 +46,25 @@ class Database:
         result = self.cur.fetchall()
 
         return result
+
+    def insert_member(self, fName, lName, sex, dob, address):
+        query = '''
+                INSERT INTO Member (fName, lName, sex, DOB, address, dateJoined)
+                VALUES ('{}', '{}', '{}', '{}', '{}', NOW())
+                '''.format(fName, lName, sex, dob, address)
+        print('Query: {}'.format(query), file=sys.stdout)
+        self.cur.execute(query)
+        self.con.commit()
+
+    def delete_member(self, member_no):
+        query = '''
+                DELETE FROM Member
+                WHERE memberNo = {}
+                '''.format(member_no)
+        print('Query: {}'.format(query), file=sys.stdout)
+        self.cur.execute(query)
+        self.con.commit()
+
 
     def SP_list_members(self):
         self.cur.callproc('GetAllMembers')

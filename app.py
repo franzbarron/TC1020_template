@@ -30,20 +30,45 @@ def members():
     def db_query():
         _db = db.Database()
         if request.method == "POST":
-            member_no = request.form["memberNo"]
-            member_name = request.form["memberName"]
-            membs = _db.list_member(member_no, member_name)
-            print('Listing member given info' + member_no + ' ' + member_name, file=sys.stdout)
-        else:
+            fName = request.form["fName"]
+            lName = request.form["lName"]
+            sex = request.form["sex"]
+            dob = request.form["dob"]
+            address = request.form["address"]
+            _db.insert_member(fName, lName, sex, dob, address)
+            print('Member inserted', file=sys.stdout)
+
             membs = _db.list_members()
             print('Listing all members from normal query', file=sys.stdout)
+            return membs
 
-        return membs
+        else:
+            if request.method == "GET":
+                member_no = request.values.get('memberNo', '')
+                member_name = request.values.get('memberName', '')
+                membs = _db.list_member(member_no, member_name)
+                print('Listing member given info' + member_no + ' ' + member_name, file=sys.stdout)
+                return membs
 
     res = db_query()
 
     return render_template('members.html', result=res, content_type='application/json')
 
+@app.route('/del_members', methods=["POST"])
+def del_members():
+    def db_query():
+        _db = db.Database()
+        if request.method == "POST":
+            if len(request.form) != 0:
+                member_no = request.form["memberNo"]
+                membs = _db.delete_member(member_no)
+        membs = _db.list_members()
+        print('Listing all members from normal query', file=sys.stdout)
+        return membs
+
+    res = db_query()
+
+    return render_template('members.html', result=res, content_type='application/json')
 
 @app.route('/spmembers')
 def sp_members():
