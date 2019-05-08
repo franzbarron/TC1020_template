@@ -3,43 +3,46 @@
 <style>
 
 </style>
+
 <head>
     <link rel="stylesheet" type="text/css" href="/static/styles.css">
     <meta charset="UTF-8">
     <title>Members</title>
 </head>
+
 <body>
+    <small><a href="/">Volver al inicio</a></small>
     <h1>Members</h1>
     <div>
         <form method="POST" action="{{ url_for('members') }}">
-          <div>
-            <label for="fName">First Name:</label>
-            <input type="text" id="fName" name="fName">
-          </div>
-          <div>
-            <label for="lName">Last Name:</label>
-            <input type="text" id="lName" name="lName">
-          </div>
-          <div>
-            <label class="radio">
-              <input type="radio" name="sex" value="F">
-              F
-            </label>
-            <label class="radio">
-              <input type="radio" name="sex" value="M">
-              M
-            </label>
-          </div>
-          <div>
-            <label for="dob">Date of Birth:</label>
-            <input type="date" id="dob" name="dob">
-          </div>
-          <div>
-            <label for="address">Address:</label>
-            <input type="text" id="address" name="address">
-          </div>
-          <input type="submit" value="Insert">
-          </form>
+            <div>
+                <label for="fName">First Name:</label>
+                <input type="text" id="fName" name="fName">
+            </div>
+            <div>
+                <label for="lName">Last Name:</label>
+                <input type="text" id="lName" name="lName">
+            </div>
+            <div>
+                <label class="radio">
+                    <input type="radio" name="sex" value="F">
+                    F
+                </label>
+                <label class="radio">
+                    <input type="radio" name="sex" value="M">
+                    M
+                </label>
+            </div>
+            <div>
+                <label for="dob">Date of Birth:</label>
+                <input type="date" id="dob" name="dob">
+            </div>
+            <div>
+                <label for="address">Address:</label>
+                <input type="text" id="address" name="address">
+            </div>
+            <input type="submit" value="Insert">
+        </form>
     </div>
 
     <hr>
@@ -87,4 +90,5 @@
         </div>
     </form>
 </body>
+
 </html>

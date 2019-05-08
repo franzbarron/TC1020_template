@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <link rel="stylesheet" type="text/css" href="/static/styles.css">
-  <title>Bases de Datos</title>
+    <title>Base de Datos | Tecnol&oacute;gico de Monterrey</title>
+    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
 </head>
+
 <body>
-  <h1>University database prototype</h1>
-  <ul>
-    <li>
-      <a href="{{ url_for('members') }}">Get all members from a query or depending on its name or number!</a>
-    </li>
-    <li><a href="{{ url_for('sp_members') }}">Get all members from a stored procedure!</a></li>
-    <li><a href="{{ url_for('top_and_bottom') }}">Get the members with the most and less rents</a></li>
-  </ul>
+    <div class="container">
+        <h1>Base de Datos del Tecnol&oacute;gico de Monterrey</h1>
+        <ul>
+            <li><a href="{{ url_for('alumnos') }}">Alumnos</a></li>
+            <li><a href="{{ url_for('cursos') }}">Cursos</a></li>
+            <li><a href="{{ url_for('departamentos') }}">Departamentos</a></li>
+            <li><a href="{{ url_for('grupos') }}">Grupos</a></li>
+            <li><a href="{{ url_for('profesores') }}">Profesores</a></li>
+        </ul>
+    </div>
 
 </body>
+
 </html>

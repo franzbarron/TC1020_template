@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+
+</style>
+
+<head>
+    <!-- <link rel="stylesheet" type="text/css" href="/static/styles.css"> -->
+    <meta charset="UTF-8">
+    <title>Alumnos</title>
+    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <small><a href="/">Volver al inicio</a></small>
+        <h1>Alumnos</h1>
+
+        <div id="alumnos-list">
+            <form action="{{ url_for('search_alumno') }}" method="post" class="form">
+                <div class="input-group">
+                    <input type="search" class="form-input" name="matricula" id="matricula"
+                        placeholder="Buscar matr&iacute;cula">
+                    <button class="btn input-group-btn"><i class="form-icon icon icon-search"></i></button>
+                </div>
+            </form>
+            <h2>Lista de todos los alumnos</h2>
+            <table class="table">
+                {% if result %}
+                <tr>
+                    <th>Matr&iacute;cula</th>
+                    <th>CURP</th>
+                    <th>Nombre</th>
+                    <th>Sexo</th>
+                    <th>Fecha de nacimiento</th>
+                    <th>Tel&eacute;fono</th>
+                    <th>Celular</th>
+                    <th>Direcci&oacute;n</th>
+                    <th>Departamento</th>
+                    <th>Carrera</th>
+                    <th class="delete-selector" style="display: none;">Eliminar</th>
+                </tr>
+                {% for row in result %}
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td>{{ row[1] }}</td>
+                    <td>{{ row[2] }}</td>
+                    <td>{{ row[3] }}</td>
+                    <td>{{ row[4] }}</td>
+                    <td>{{ row[5] }}</td>
+                    <td>{{ row[6] }}</td>
+                    <td>{{ row[7] }}</td>
+                    <td>{{ row[8] }}</td>
+                    <td>{{ row[9] }}</td>
+                    <td class="delete-selector" style="display: none;">
+                        <div class="form-group">
+                            <input class="delete-check" type="checkbox" value="{{ row[0] }}">
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </table>
+        </div>
+
+        <div id="del-btns" style="display: none;">
+            <button class="btn btn-error" id="delete-confirm">Eliminar</button>
+            <button class="btn btn-primary" id="cancel-delete">Cancelar</button>
+        </div>
+
+        <div id="default-btns">
+            <button class="btn btn-success" id="insert-btn">Insertar</button>
+            <button class="btn btn-error" id="delete-btn">Eliminar</button>
+        </div>
+
+        <div id="insert-new" style="display: none;">
+            <h2>Insertar nuevo alumno</h2>
+            <form action="{{ url_for('alumnos')}}" method="post" class="form">
+                <h6>Informaci&oacute;n Personal</h6>
+                <div class="form-group">
+                    <label class="form-label" for="matricula">Matr&iacute;cula:</label>
+                    <input class="form-input" type="text" name="matricula" id="matricula">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="curp">CURP:</label>
+                    <input class="form-input" type="text" name="curp" id="curp">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="nombre">Nombre:</label>
+                    <input class="form-input" type="text" name="nombre" id="nombre">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Sexo:</label>
+                    <label class="form-radio form-inline">
+                        <input type="radio" name="sexo" checked="" value="H"><i class="form-icon"></i>Hombre
+                    </label>
+                    <label class="form-radio form-inline">
+                        <input type="radio" name="sexo" value="M"><i class="form-icon"></i>Mujer
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="bdate">Fecha de nacimiento:</label>
+                    <input class="form-input" type="date" name="bdate" id="bdate">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="telefono">Telefono</label>
+                    <input class="form-input" type="text" name="telefono" id="telefono">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="celular">Celular:</label>
+                    <input class="form-input" type="text" name="celular" id="celular">
+                </div>
+                <div class="form-group">
+                    <h6>Domicilio</h6>
+                    <!-- <span class="input-group-addon">Direcci&oacute;n:</span> -->
+                    <label class="form-label" for="calle">Calle y n&uacute;mero:</label>
+                    <input class="form-input" type="text" name="calle" id="calle">
+                    <label class="form-label" for="colonia">Colonia:</label>
+                    <input class="form-input" type="text" name="colonia" id="colonia">
+                    <label class="form-label" for="cp">C&oacute;digo Postal:</label>
+                    <input class="form-input" type="text" name="cp" id="cp">
+                    <label class="form-label" for="municipio">Municipio:</label>
+                    <input class="form-input" type="text" name="municipio" id="municipio">
+                    <label class="form-label" for="entidad">Entidad:</label>
+                    <input class="form-input" type="text" name="entidad" id="entidad">
+                    <!-- <label class="form-label" for="direccion">Direcci&oacute;n:</label>
+                    <input class="form-input" type="text" name="direccion" id="direccion"> -->
+                </div>
+                <h6>Informaci&oacute;n de carrera</h6>
+                <div class="form-group">
+                    <label class="form-label" for="departamento">Departamento:</label>
+                    <input class="form-input" type="text" name="departamento" id="departamento">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="carrera">Carrera:</label>
+                    <input class="form-input" type="text" name="carrera" id="carrera">
+                </div>
+                <button class="btn btn-success" type="submit">Insertar</button>
+                <button id="cancel-insert" class="btn btn-error">Cancelar</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        const ALUMNOS_LIST = document.querySelector('#alumnos-list');
+        const CANCEL_DELETE = document.querySelector('#cancel-delete');
+        const CANCEL_INSERT = document.querySelector('#cancel-insert');
+        const DEFAULT_BTNS = document.querySelector('#default-btns');
+        const DEL_BTNS = document.querySelector('#del-btns');
+        const DELETE_BTN = document.querySelector('#delete-btn');
+        const DELETE_CHECK = document.querySelectorAll('.delete-check');
+        const DELETE_CONFIRM = document.querySelector('#delete-confirm')
+        const DELETE_SELECTOR = document.querySelectorAll('.delete-selector');
+        const INSERT_BTN = document.querySelector('#insert-btn');
+        const INSERT_NEW = document.querySelector('#insert-new');
+
+        CANCEL_DELETE.addEventListener('click', event => {
+            DELETE_SELECTOR.forEach(cell => {
+                cell.style.display = 'none';
+                DEFAULT_BTNS.style.display = '';
+                DEL_BTNS.style.display = 'none';
+            });
+        });
+
+        CANCEL_INSERT.addEventListener('click', event => {
+            DEFAULT_BTNS.style.display = '';
+            ALUMNOS_LIST.style.display = '';
+            INSERT_NEW.style.display = 'none';
+        });
+
+        DELETE_BTN.addEventListener('click', event => {
+            DELETE_SELECTOR.forEach(cell => {
+                cell.style.display = '';
+                DEFAULT_BTNS.style.display = 'none';
+                DEL_BTNS.style.display = '';
+            });
+        });
+
+        DELETE_CONFIRM.addEventListener('click', event => {
+            let checks = [];
+            DELETE_CHECK.forEach(check => {
+                if (check.checked)
+                    checks.push(check.value);
+            });
+
+            fetch('/del_alumno', {
+                method: 'POST',
+                body: JSON.stringify(checks)
+            }).then(response => {
+                location.reload();
+            })
+        })
+
+        INSERT_BTN.addEventListener('click', event => {
+            DEFAULT_BTNS.style.display = 'none';
+            ALUMNOS_LIST.style.display = 'none';
+            INSERT_NEW.style.display = '';
+        });
+
+    </script>
+</body>
+
+</html>

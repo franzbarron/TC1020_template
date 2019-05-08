@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+
+</style>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Grupos</title>
+    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <small><a href="/">Volver al inicio</a></small>
+        <h1>Grupos</h1>
+
+        <div id="departamentos-list">
+            <h2>Lista de todos los grupos</h2>
+            <form action="{{ url_for('search_grupo') }}" method="post" class="form">
+                <div class="input-group">
+                    <input type="search" class="form-input" name="curso" id="curso"
+                        placeholder="Buscar por nombre de curso">
+                    <button class="btn input-group-btn"><i class="form-icon icon icon-search"></i></button>
+                </div>
+            </form>
+            <table class="table">
+                {% if result %}
+                <tr>
+                    <th>N&uacute;mero</th>
+                    <th>Clave del curso</th>
+                    <th>Semestre</th>
+                    <th>A&ntilde;o</th>
+                    <th>Nombre del curso</th>
+                    <th>Profesor</th>
+                    <th class="delete-selector" style="display: none;">Eliminar</th>
+                </tr>
+                {% for row in result %}
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td>{{ row[1] }}</td>
+                    <td>{{ row[2] }}</td>
+                    <td>{{ row[3] }}</td>
+                    <td>{{ row[4] }}</td>
+                    <td>{{ row[5] }}</td>
+                    <td class="delete-selector" style="display: none;">
+                        <div class="form-group">
+                            <input class="delete-check" type="checkbox"
+                                value="{{ row[0] }} {{ row[1] }} {{ row[2] }} {{ row[3] }}">
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </table>
+        </div>
+
+        <div id="del-btns" style="display: none;">
+            <button class="btn btn-error" id="delete-confirm">Eliminar</button>
+            <button class="btn btn-primary" id="cancel-delete">Cancelar</button>
+        </div>
+
+        <div id="default-btns">
+            <button class="btn btn-success" id="insert-btn">Insertar</button>
+            <button class="btn btn-error" id="delete-btn">Eliminar</button>
+        </div>
+
+        <div id="insert-new" style="display: none;">
+            <h2>Insertar nuevo grupo</h2>
+            <form action="{{ url_for('grupos')}}" method="post" class="form">
+                <div class="form-group">
+                    <label class="form-label" for="numero">N&uacute;mero:</label>
+                    <input class="form-input" type="text" name="numero" id="numero">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Semestre:</label>
+                    <label class="form-radio form-inline">
+                        <input type="radio" name="semestre" checked="" value="EM"><i class="form-icon"></i>
+                        Enero&mdash;Mayo
+                    </label>
+                    <label class="form-radio form-inline">
+                        <input type="radio" name="semestre" value="AD"><i class="form-icon"></i> Agosto&mdash;Diciembre
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="year">A&ntilde;o:</label>
+                    <input class="form-input" type="number" name="year" id="year" min="1943" max="2019">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="curso">Curso:</label>
+                    <input class="form-input" type="text" name="curso" id="curso">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="profesor">Profesor:</label>
+                    <input class="form-input" type="text" name="profesor" id="profesor">
+                </div>
+                <button class="btn btn-success" type="submit">Insertar</button>
+                <button id="cancel-insert" class="btn btn-error">Cancelar</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        const CANCEL_DELETE = document.querySelector('#cancel-delete');
+        const CANCEL_INSERT = document.querySelector('#cancel-insert');
+        const DEFAULT_BTNS = document.querySelector('#default-btns');
+        const DEL_BTNS = document.querySelector('#del-btns');
+        const DELETE_BTN = document.querySelector('#delete-btn');
+        const DELETE_CHECK = document.querySelectorAll('.delete-check');
+        const DELETE_CONFIRM = document.querySelector('#delete-confirm')
+        const DELETE_SELECTOR = document.querySelectorAll('.delete-selector');
+        const DEPARTAMENTOS_LIST = document.querySelector('#departamentos-list');
+        const INSERT_BTN = document.querySelector('#insert-btn');
+        const INSERT_NEW = document.querySelector('#insert-new');
+
+        CANCEL_DELETE.addEventListener('click', event => {
+            DELETE_SELECTOR.forEach(cell => {
+                cell.style.display = 'none';
+                DEFAULT_BTNS.style.display = '';
+                DEL_BTNS.style.display = 'none';
+            });
+        });
+
+        CANCEL_INSERT.addEventListener('click', event => {
+            DEFAULT_BTNS.style.display = '';
+            DEPARTAMENTOS_LIST.style.display = '';
+            INSERT_NEW.style.display = 'none';
+        });
+
+        DELETE_BTN.addEventListener('click', event => {
+            DELETE_SELECTOR.forEach(cell => {
+                cell.style.display = '';
+                DEFAULT_BTNS.style.display = 'none';
+                DEL_BTNS.style.display = '';
+            });
+        });
+
+        DELETE_CONFIRM.addEventListener('click', event => {
+            let checks = [];
+            DELETE_CHECK.forEach(check => {
+                if (check.checked) {
+                    let tokens = check.value.split(' ');
+                    checks.push(tokens);
+                }
+            });
+
+            fetch('/del_grupo', {
+                method: 'POST',
+                body: JSON.stringify(checks)
+            }).then(response => {
+                location.reload();
+            })
+        })
+
+        INSERT_BTN.addEventListener('click', event => {
+            DEFAULT_BTNS.style.display = 'none';
+            DEPARTAMENTOS_LIST.style.display = 'none';
+            INSERT_NEW.style.display = '';
+        });
+
+    </script>
+</body>
+
+</html>
