@@ -122,12 +122,40 @@ class Database:
         result = self.cur.fetchall()
         return result
 
-    def insert_grupo(self, numero, semestre, anio, curso, profesor):
+    def insert_grupo(self, numero, semestre, anio, curso, profesor, hora):
         try:
             query = """
-            INSERT INTO Grupo
-            VALUES({},'{}',{},(SELECT numero FROM Curso WHERE nombre='{}'),(SELECT pID FROM Profesor WHERE nombre='{}'))""".format(
-                numero, semestre, anio, curso, profesor
+                    INSERT INTO Grupo
+                    VALUES(
+                        {},
+                        '{}',
+                        {},
+                        (SELECT numero FROM Curso WHERE numero='{}'),
+                        (SELECT pID FROM Profesor WHERE pID='{}'),
+                        (SELECT id FROM Horario WHERE id='{}')
+                    )
+                    """.format(
+                numero, semestre, anio, curso, profesor, hora
+            )
+            print("Query: {}".format(query), file=sys.stdout)
+            self.cur.execute(query)
+            self.con.commit()
+            query = """
+                    INSERT INTO CursosImpartidos
+                    VALUES((SELECT pID FROM Profesor WHERE nombre='{}'),(SELECT numero FROM Curso WHERE nombre='{}'),'{}','{}')
+                    """.format(
+                profesor, curso, semestre, anio
+            )
+            self.cur.execute(query)
+            self.con.commit()
+            query = """
+                    INSERT INTO NoLibre
+                    VALUES(
+                        (SELECT pID FROM Profesor WHERE nombre='{}'),
+                        (SELECT id FROM Horario WHERE id='{}')
+                    )
+                    """.format(
+                profesor, hora
             )
             print("Query: {}".format(query), file=sys.stdout)
             self.cur.execute(query)
@@ -135,7 +163,7 @@ class Database:
         except Exception as e:
             print("Exception occured: ", e)
 
-    def delete_grupo(self, numero, semestre, year, curso):
+    def delete_grupo(self, numero, curso, semestre, year):
         query = """DELETE FROM Grupo
                     WHERE numero='{}'
                     AND semestre='{}'
@@ -151,9 +179,17 @@ class Database:
     def list_alumno(self):
         query = """
                 SELECT  a.matricula, a.curp, a.nombre, a.sexo, a.bDate, a.telefono, a.celular, a.direccion, d.nombre, a.carrera
-                FROM    Alumno a, Departamento d
+                FROM    Alumno a, Departamento d, Carreras c
                 WHERE   a.departamento = d.numero
+                AND     a.carrera=c.inicialismo
                 """
+        print("Query: {}".format(query), file=sys.stdout)
+        self.cur.execute(query)
+        result = self.cur.fetchall()
+        return result
+
+    def list_carreras(self):
+        query = "SELECT * FROM Carreras"
         print("Query: {}".format(query), file=sys.stdout)
         self.cur.execute(query)
         result = self.cur.fetchall()
@@ -175,7 +211,7 @@ class Database:
         try:
             query = """
                     INSERT INTO Alumno
-                    VALUES('{}', '{}','{}','{}','{}','{}','{}','{}',(SELECT numero FROM Departamento WHERE nombre='{}'), '{}')
+                    VALUES('{}', '{}','{}','{}','{}','{}','{}','{}',(SELECT numero FROM Departamento WHERE nombre='{}'), (SELECT inicialismo FROM Carreras WHERE inicialismo='{}'))
                     """.format(
                 matricula,
                 curp,
@@ -258,33 +294,265 @@ class Database:
         result = self.cur.fetchall()
         return result
 
-    # def top_and_bottom_clients(self):
-    #     query = """
-    #             select CONCAT(fName,' ',lName) Nombre,
-    #                    'Con mas videos rentados' AS Posicion
-    #             from Member
-    #             where memberNo in
-    #             (select memberNo
-    #             from RentalAgreement
-    #             group by memberNo
-    #             having count(videoNo) >= all
-    #                       (select count(videoNo)
-    #                        from RentalAgreement
-    #                        group by memberNo))
-    #             UNION
-    #             select CONCAT(fName,' ',lName)Nombre, 'Con menos videos rentados' AS Posicion
-    #             from Member
-    #             where memberNo in
-    #             (select memberNo
-    #             from RentalAgreement
-    #             group by memberNo
-    #             having count(videoNo) <= all
-    #                       (select count(videoNo)
-    #                        from RentalAgreement
-    #                        group by memberNo))
-    #             """
-    #     print("Query: {}".format(query), file=sys.stdout)
-    #     self.cur.execute(query)
-    #     result = self.cur.fetchall()
+    def list_ecoas(self):
+        query = """
+                SELECT  p.pID, c.numero, c.nombre, g.numero, g.semestre, g.anio, e.calificacion
+                FROM    Ecoas e, Profesor p, Grupo g, Curso c
+                WHERE   e.profesor=p.pID
+                AND     g.profesor=p.pID
+                AND     e.grupo=g.numero
+                AND     g.curso=c.numero
+                """
+        print("Query: {}".format(query), file=sys.stdout)
+        self.cur.execute(query)
+        result = self.cur.fetchall()
+        return result
 
-    #     return result
+    def insert_ecoas(self, profesor, nombre, grupo, semestre, anio, calificacion):
+        try:
+            query = """
+                 INSERT INTO Ecoas
+                 VALUES ((
+                     SELECT pID FROM Profesor WHERE pID='{}'
+                     ), (
+                         SELECT numero
+                         FROM Grupo
+                         WHERE numero='{}'
+                         AND profesor='{}'
+                         AND semestre='{}'
+                         AND anio='{}'
+                         AND curso ='{}'
+                     ), {})
+                 """.format(
+                profesor, grupo, profesor, semestre, anio, nombre, calificacion
+            )
+            print("Query: {}".format(query), file=sys.stdout)
+            self.cur.execute(query)
+            self.con.commit()
+        except Exception as e:
+            print("Exception occured: ", e)
+
+    def delete_ecoas(self, profesor, grupo):
+        query = """
+                DELETE FROM Ecoas
+                WHERE       profesor = '{}'
+                AND         grupo='{}'
+                """.format(
+            profesor, grupo
+        )
+        print("Query: {}".format(query), file=sys.stdout)
+        self.cur.execute(query)
+        self.con.commit()
+
+    def find_ecoas(self, nomina):
+        query = """
+                SELECT  p.pID, c.numero, c.nombre, g.numero, g.semestre, g.anio, e.calificacion
+                FROM    Ecoas e, Profesor p, Grupo g, Curso c
+                WHERE   e.profesor LIKE '%{}%'
+                AND     e.profesor=p.pID
+                AND     g.profesor=p.pID
+                AND     e.grupo=g.numero
+                AND     g.curso=c.numero
+                """.format(
+            nomina
+        )
+        print("Query: {}".format(query), file=sys.stdout)
+        self.cur.execute(query)
+        result = self.cur.fetchall()
+        return result
+
+    def list_impartidos(self):
+        query = """
+                SELECT  p.pID, p.nombre, c.numero, c.nombre, i.semestre, i.anio
+                FROM    Curso c, CursosImpartidos i, Profesor p
+                WHERE   i.profesor=p.pID
+                AND     i.curso=c.numero
+                """
+        print("Query: {}".format(query), file=sys.stdout)
+        self.cur.execute(query)
+        result = self.cur.fetchall()
+        return result
+
+    def find_impartidos(self, nomina):
+        query = """
+                SELECT  p.pID, p.nombre, c.numero, c.nombre, i.semestre, i.anio
+                FROM    Curso c, CursosImpartidos i, Profesor p
+                WHERE   i.profesor LIKE '%{}%'
+                AND     i.profesor=p.pID
+                AND     i.curso=c.numero
+                """.format(
+            nomina
+        )
+        print("Query: {}".format(query), file=sys.stdout)
+        self.cur.execute(query)
+        result = self.cur.fetchall()
+        return result
+
+    def list_pertenece(self):
+        query = """
+                SELECT  a.matricula, a.nombre, c.numero, c.nombre, g.numero, g.semestre, g.anio
+                FROM    Alumno a, Curso c, Grupo g, PerteneceGrupo p
+                WHERE   p.alumno=a.matricula
+                AND     p.grupo=g.numero
+                AND     p.curso=g.curso
+                AND     p.semestre=g.semestre
+                AND     p.anio=g.anio
+                AND     p.curso=c.numero
+                """
+        print("Query: {}".format(query), file=sys.stdout)
+        self.cur.execute(query)
+        result = self.cur.fetchall()
+        return result
+
+    def insert_pertenece(self, matricula, curso, grupo, semestre, anio):
+        try:
+            query = """
+                INSERT INTO PerteneceGrupo
+                VALUES(
+                    (SELECT matricula FROM alumno WHERE matricula='{}'),
+                    (SELECT numero FROM curso WHERE numero='{}'),
+                    (SELECT numero FROM grupo WHERE numero='{}' AND semestre='{}' AND anio='{}' AND curso='{}'),
+                    '{}',
+                    '{}'
+                )
+                """.format(
+                matricula, curso, grupo, semestre, anio, curso, semestre, anio
+            )
+            print("Query: {}".format(query), file=sys.stdout)
+            self.cur.execute(query)
+            self.con.commit()
+            query = """
+                    INSERT INTO CursosCursados(alumno, curso, semestre, anio)
+                    VALUES(
+                        (SELECT matricula FROM Alumno WHERE matricula='{}'),
+                        (SELECT numero FROM Curso WHERE numero='{}'),
+                        '{}',
+                        '{}'
+                    )
+                    """.format(
+                matricula, curso, semestre, anio
+            )
+            print("Query: {}".format(query), file=sys.stdout)
+            self.cur.execute(query)
+            self.con.commit()
+        except Exception as e:
+            print("Exception occured: ", e)
+
+    def delete_pertenece(self, alumno, curso, semestre, anio):
+        query = """
+                DELETE FROM PerteneceGrupo
+                WHERE       alumno = '{}'
+                AND         curso='{}'
+                AND         semestre='{}'
+                AND         anio='{}'
+                """.format(
+            alumno, curso, semestre, anio
+        )
+        print("Query: {}".format(query), file=sys.stdout)
+        self.cur.execute(query)
+        self.con.commit()
+
+    def list_cursados(self):
+        query = """
+                SELECT  a.matricula, a.nombre, c.numero, c.nombre, cc.semestre, cc.anio, cc.calificacion
+                FROM    Alumno a, Curso c, CursosCursados cc
+                WHERE   cc.alumno=a.matricula
+                AND     cc.curso=c.numero
+                """
+        print("Query: {}".format(query), file=sys.stdout)
+        self.cur.execute(query)
+        result = self.cur.fetchall()
+        return result
+
+    def find_cursados(self, matricula):
+        query = """
+                SELECT  a.matricula, a.nombre, c.numero, c.nombre, cc.semestre, cc.anio, cc.calificacion
+                FROM    Alumno a, Curso c, CursosCursados cc
+                WHERE   cc.alumno LIKE '%{}%'
+                AND     cc.alumno=a.matricula
+                AND     cc.curso=c.numero
+                """.format(
+            matricula
+        )
+        print("Query: {}".format(query), file=sys.stdout)
+        self.cur.execute(query)
+        result = self.cur.fetchall()
+        return result
+
+    def list_horario(self):
+        query = "SELECT * FROM Horario"
+        print("Query: {}".format(query), file=sys.stdout)
+        self.cur.execute(query)
+        result = self.cur.fetchall()
+        return result
+
+    def list_no_libre(self, nomina):
+        query = """
+                SELECT  h.id, h.hora
+                FROM    NoLibre n, Horario h, Libre l
+                WHERE   n.nomina='{}'
+                AND     h.id NOT IN(n.hora)
+                """.format(
+            nomina
+        )
+        print("Query: {}".format(query), file=sys.stdout)
+        self.cur.execute(query)
+        result = self.cur.fetchall()
+        return result
+
+    def list_libre(self):
+        query = """
+                SELECT  p.pID, p.nombre, h.hora
+                FROM    Libre l, Profesor p, Horario h
+                WHERE   l.nomina=p.pID
+                AND     l.hora=h.id
+                """
+        print("Query: {}".format(query), file=sys.stdout)
+        self.cur.execute(query)
+        result = self.cur.fetchall()
+        return result
+
+    def insert_libre(self, nomina, hora):
+        try:
+            query = """
+                INSERT INTO Libre
+                VALUES(
+                    (SELECT pID FROM Profesor   WHERE pID='{}'),
+                    (SELECT id  FROM Horario    WHERE id='{}')
+                )
+                """.format(
+                nomina, hora
+            )
+            print("Query: {}".format(query), file=sys.stdout)
+            self.cur.execute(query)
+            self.con.commit()
+        except Exception as e:
+            print("Exception occured: ", e)
+
+    def find_libre(self, nomina):
+        query = """
+                SELECT  p.pID, p.nombre, h.hora
+                FROM    Libre l, Profesor p, Horario h
+                WHERE   l.nomina LIKE '%{}%'
+                AND     l.nomina=p.pID
+                AND     l.hora=h.id
+                """.format(
+            nomina
+        )
+        print("Query: {}".format(query), file=sys.stdout)
+        self.cur.execute(query)
+        result = self.cur.fetchall()
+        return result
+
+    def delete_libre(self, nomina, hora):
+        query = """
+                DELETE FROM Libre
+                WHERE       nomina = '{}'
+                AND         hora IN (SELECT id FROM Horario WHERE hora ='{}')
+                """.format(
+            nomina, hora
+        )
+        print("Query: {}".format(query), file=sys.stdout)
+        self.cur.execute(query)
+        self.con.commit()
+
