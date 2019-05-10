@@ -1,3 +1,7 @@
+CREATE DATABASE TEC;
+
+USE TEC;
+
 CREATE TABLE Departamento(
     numero      int             AUTO_INCREMENT,
     nombre      varchar(255)    NOT NULL,
@@ -10,6 +14,12 @@ CREATE TABLE Profesor(
     pID     char(9),
     nombre  varchar(255)    NOT NULL,
     PRIMARY KEY(pID)
+);
+
+CREATE TABLE Carreras(
+    inicialismo varchar(4),
+    nombre      varchar(255)   NOT NULL COLLATE 'utf8_unicode_ci',
+    PRIMARY KEY(inicialismo)
 );
 
 CREATE TABLE Alumno(
@@ -46,7 +56,8 @@ CREATE TABLE Grupo(
     semestre    char(2),
     anio        year,
     curso       varchar(10),
-    profesor    char(9)         NOT NULL,
+    profesor    char(9) NOT NULL,
+    hora        int     NOT NULL,    
     CHECK(semestre IN ('EM', 'AD')),
     FOREIGN KEY(curso)      REFERENCES Curso(numero),
     FOREIGN KEY(profesor)   REFERENCES Profesor(pID),
@@ -79,8 +90,7 @@ CREATE TABLE CursosCursados(
     curso           varchar(10),
     semestre        char(2),
     anio            year,
-    calificacion    int(3),
-    CHECK(calificacion <= 100),
+    calificacion    varchar(3),
     CHECK(semestre IN('EM', 'AD')),
     FOREIGN KEY(alumno) REFERENCES Alumno(matricula),
     FOREIGN KEY(curso)  REFERENCES Curso(numero),
@@ -96,5 +106,26 @@ CREATE TABLE PerteneceGrupo(
     FOREIGN KEY(alumno) REFERENCES Alumno(matricula),
     FOREIGN KEY(curso)  REFERENCES Curso(numero),
     FOREIGN KEY(grupo)  REFERENCES Grupo(numero),
-    CONSTRAINT  pk_pg   PRIMARY KEY(alumno, grupo, curso)
+    CONSTRAINT  pk_pg   PRIMARY KEY(alumno, grupo, curso, semestre, anio)
+);
+
+CREATE TABLE Horario(
+    id      int         AUTO_INCREMENT,
+    hora    varchar(15),
+    PRIMARY KEY(id)
+);
+
+CREATE TABLE NoLibre(
+    nomina  char(9),
+    hora    int,
+    FOREIGN KEY(nomina) REFERENCES Profesor(pID),
+    FOREIGN KEY(hora)   REFERENCES Horario(id)
+);
+
+CREATE TABLE Libre(
+    nomina  char(9),
+    hora    int,
+    FOREIGN KEY(nomina) REFERENCES Profesor(pID),
+    FOREIGN KEY(hora)   REFERENCES Horario(id),
+    CONSTRAINT pk_libre PRIMARY KEY(nomina, hora)
 );
