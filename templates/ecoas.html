@@ -5,28 +5,36 @@
 </style>
 
 <head>
-    <!-- <link rel="stylesheet" type="text/css" href="/static/styles.css"> -->
     <meta charset="UTF-8">
-    <title>Cursos</title>
+    <title>ECOAs</title>
     <link rel="stylesheet" href="/static/spectre.min.css">
+    <link rel="stylesheet" href="/static/spectre-icons.min.css">
 </head>
 
 <body>
     <div class="container">
         <small><a href="/">Volver al inicio</a></small>
-        <h1>Cursos</h1>
+        <h1>ECOAs</h1>
 
-        <div id="departamentos-list">
-            <h2>Lista de todos los cursos</h2>
+        <div id="ecoas-list">
+            <h2>Lista de todos las ecoas</h2>
+            <form action="{{ url_for('search_ecoas') }}" method="post" class="form">
+                <div class="input-group">
+                    <input type="search" class="form-input" name="nomina" id="nomina"
+                        placeholder="Buscar por n&oacute;mina del profesor">
+                    <button class="btn input-group-btn"><i class="form-icon icon icon-search"></i></button>
+                </div>
+            </form>
             <table class="table">
                 {% if result %}
                 <tr>
-                    <th>Clave</th>
-                    <th>Nombre</th>
-                    <th>Descripci&oacute;n</th>
-                    <th>Horas por semana</th>
+                    <th>Profesor</th>
+                    <th>Clave de Curso</th>
+                    <th>Nombre de Curso</th>
+                    <th>Grupo</th>
                     <th>Semestre</th>
-                    <th>Departamento</th>
+                    <th>A&ntilde;o</th>
+                    <th>Calificaci&oacute;n</th>
                     <th class="delete-selector" style="display: none;">Eliminar</th>
                 </tr>
                 {% for row in result %}
@@ -37,9 +45,10 @@
                     <td>{{ row[3] }}</td>
                     <td>{{ row[4] }}</td>
                     <td>{{ row[5] }}</td>
+                    <td>{{ row[6] }}</td>
                     <td class="delete-selector" style="display: none;">
                         <div class="form-group">
-                            <input class="delete-check" type="checkbox" value="{{ row[0] }}">
+                            <input class="delete-check" type="checkbox" value="{{ row[0] }} {{ row[3]  }}">
                         </div>
                     </td>
                 </tr>
@@ -59,31 +68,37 @@
         </div>
 
         <div id="insert-new" style="display: none;">
-            <h2>Insertar nuevo curso</h2>
-            <form action="{{ url_for('cursos')}}" method="post" class="form">
+            <h2>Insertar nueva ECOA</h2>
+            <form action="{{ url_for('ecoas')}}" method="post" class="form">
                 <div class="form-group">
-                    <label class="form-label" for="numero">Clave:</label>
-                    <input class="form-input" type="text" name="numero" id="numero">
+                    <label class="form-label" for="profesor">Profesor:</label>
+                    <input class="form-input" type="text" name="profesor" id="profesor">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="nombre">Nombre:</label>
-                    <input class="form-input" type="text" name="nombre" id="nombre">
+                    <label class="form-label" for="curso">Clave del curso:</label>
+                    <input class="form-input" type="text" name="curso" id="curso">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="descripcion">Descripci&oacute;n:</label>
-                    <input class="form-input" type="text" name="descripcion" id="descripcion">
+                    <label class="form-label" for="grupo">Grupo:</label>
+                    <input class="form-input" type="text" name="grupo" id="grupo">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="horas-por-semana">Horas por semana:</label>
-                    <input class="form-input" type="number" name="horas-por-semana" id="horas-por-semana">
+                    <label class="form-label">Semestre:</label>
+                    <label class="form-radio form-inline">
+                        <input type="radio" name="semestre" checked="" value="EM"><i class="form-icon"></i>
+                        Enero&mdash;Mayo
+                    </label>
+                    <label class="form-radio form-inline">
+                        <input type="radio" name="semestre" value="AD"><i class="form-icon"></i> Agosto&mdash;Diciembre
+                    </label>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="semestre">Semestre:</label>
-                    <input class="form-input" type="number" name="semestre" id="semestre">
+                    <label class="form-label" for="year">A&ntilde;o:</label>
+                    <input class="form-input" type="number" name="year" id="year">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="departamento">Departamento:</label>
-                    <input class="form-input" type="text" name="departamento" id="departamento">
+                    <label class="form-label" for="calificacion">Calificaci&oacute;n:</label>
+                    <input class="form-input" type="number" name="calificacion" id="calificacion" min="0" max="100">
                 </div>
                 <button class="btn btn-success" type="submit">Insertar</button>
                 <button id="cancel-insert" class="btn btn-error">Cancelar</button>
@@ -99,7 +114,7 @@
         const DELETE_CHECK = document.querySelectorAll('.delete-check');
         const DELETE_CONFIRM = document.querySelector('#delete-confirm')
         const DELETE_SELECTOR = document.querySelectorAll('.delete-selector');
-        const DEPARTAMENTOS_LIST = document.querySelector('#departamentos-list');
+        const ECOAS_LIST = document.querySelector('#ecoas-list');
         const INSERT_BTN = document.querySelector('#insert-btn');
         const INSERT_NEW = document.querySelector('#insert-new');
 
@@ -113,7 +128,7 @@
 
         CANCEL_INSERT.addEventListener('click', event => {
             DEFAULT_BTNS.style.display = '';
-            DEPARTAMENTOS_LIST.style.display = '';
+            ECOAS_LIST.style.display = '';
             INSERT_NEW.style.display = 'none';
         });
 
@@ -128,11 +143,13 @@
         DELETE_CONFIRM.addEventListener('click', event => {
             let checks = [];
             DELETE_CHECK.forEach(check => {
-                if (check.checked)
-                    checks.push(check.value);
+                if (check.checked) {
+                    let tokens = check.value.split(' ');
+                    checks.push(tokens);
+                }
             });
 
-            fetch('/del_curso', {
+            fetch('/del_ecoas', {
                 method: 'POST',
                 body: JSON.stringify(checks)
             }).then(response => {
@@ -142,7 +159,7 @@
 
         INSERT_BTN.addEventListener('click', event => {
             DEFAULT_BTNS.style.display = 'none';
-            DEPARTAMENTOS_LIST.style.display = 'none';
+            ECOAS_LIST.style.display = 'none';
             INSERT_NEW.style.display = '';
         });
 

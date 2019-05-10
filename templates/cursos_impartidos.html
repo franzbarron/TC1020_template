@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+
+</style>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cursos Impartidos</title>
+    <link rel="stylesheet" href="/static/spectre.min.css">
+    <link rel="stylesheet" href="/static/spectre-icons.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <small><a href="/">Volver al inicio</a></small>
+        <h1>Cursos Impartidos</h1>
+
+        <div id="imartidos-list">
+            <h2>Lista de todos los cursos impartidos por profesor</h2>
+            <form action="{{ url_for('search_impartidos') }}" method="post" class="form">
+                <div class="input-group">
+                    <input type="search" class="form-input" name="nomina" id="nomina"
+                        placeholder="Buscar por n&oacute;mina del profesor">
+                    <button class="btn input-group-btn"><i class="form-icon icon icon-search"></i></button>
+                </div>
+            </form>
+            <table class="table">
+                {% if result %}
+                <tr>
+                    <th>N&oacute;mina</th>
+                    <th>Profesor</th>
+                    <th>Clave</th>
+                    <th>Nombre</th>
+                    <th>Semestre</th>
+                    <th>A&ntilde;o</th>
+                    <th class="delete-selector" style="display: none;">Eliminar</th>
+                </tr>
+                {% for row in result %}
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td>{{ row[1] }}</td>
+                    <td>{{ row[2] }}</td>
+                    <td>{{ row[3] }}</td>
+                    <td>{{ row[4] }}</td>
+                    <td>{{ row[5] }}</td>
+                    <td class="delete-selector" style="display: none;">
+                        <div class="form-group">
+                            <input class="delete-check" type="checkbox" value="{{ row[0] }}">
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </table>
+        </div>
+</body>
+
+</html>

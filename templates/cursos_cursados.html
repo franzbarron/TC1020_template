@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+
+</style>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cursos Cursados</title>
+    <link rel="stylesheet" href="/static/spectre.min.css">
+    <link rel="stylesheet" href="/static/spectre-icons.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <small><a href="/">Volver al inicio</a></small>
+        <h1>Cursos Cursados</h1>
+
+        <div id="imartidos-list">
+            <h2>Lista de todos los cursos cursados por alumo</h2>
+            <form action="{{ url_for('search_cursados') }}" method="post" class="form">
+                <div class="input-group">
+                    <input type="search" class="form-input" name="matricula" id="matricula"
+                        placeholder="Buscar por matr&iacute;cula">
+                    <button class="btn input-group-btn"><i class="form-icon icon icon-search"></i></button>
+                </div>
+            </form>
+            <table class="table">
+                {% if result %}
+                <tr>
+                    <th>Matr&iacute;cula</th>
+                    <th>Nombre</th>
+                    <th>Clave</th>
+                    <th>Curso</th>
+                    <th>Semestre</th>
+                    <th>A&ntilde;o</th>
+                    <th>Calificaci&oacute;n</th>
+                </tr>
+                {% for row in result %}
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td>{{ row[1] }}</td>
+                    <td>{{ row[2] }}</td>
+                    <td>{{ row[3] }}</td>
+                    <td>{{ row[4] }}</td>
+                    <td>{{ row[5] }}</td>
+                    <td>{{ row[6] }}</td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </table>
+        </div>
+</body>
+
+</html>

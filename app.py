@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request#, get_json
 import logging
 import sys
 
@@ -161,7 +161,8 @@ def grupos():
         _db = db.Database()
         if request.method == "GET":
             groups = _db.list_grupo()
-            return groups
+            horas = _db.list_horario()
+            return groups, horas
         else:
             if request.method == "POST":
                 numero = request.form["numero"]
@@ -169,20 +170,23 @@ def grupos():
                 year = request.form["year"]
                 curso = request.form["curso"]
                 profesor = request.form["profesor"]
+                hora = request.form["hora"]
                 if (
                     numero != ""
                     and semestre != ""
                     and year != ""
                     and curso != ""
                     and profesor != ""
+                    and hora != ""
                 ):
-                    _db.insert_grupo(numero, semestre, year, curso, profesor)
+                    _db.insert_grupo(numero, semestre, year, curso, profesor, hora)
 
             groups = _db.list_grupo()
-            return groups
+            horas = _db.list_horario()
+            return groups, horas
 
-    res = db_query()
-    return render_template("grupos.html", result=res)
+    res, hr = db_query()
+    return render_template("grupos.html", result=res, horas=hr)
 
 
 @app.route("/del_grupo", methods=["POST"])
@@ -193,7 +197,7 @@ def del_grupo():
             result = json.loads(request.data)
             # print(result, file=sys.stdout)
             for datum in result:
-                # print(datum[0], file=sys.stdout)
+                print(datum, file=sys.stdout)
                 _db.delete_grupo(datum[0], datum[1], datum[2], datum[3])
 
         group = _db.list_profesor()
@@ -210,7 +214,8 @@ def alumnos():
     def db_query():
         if request.method == "GET":
             student = _db.list_alumno()
-            return student
+            carreras = _db.list_carreras()
+            return student, carreras
         else:
             if request.method == "POST":
                 matricula = request.form["matricula"]
@@ -257,10 +262,11 @@ def alumnos():
                     )
 
             student = _db.list_alumno()
-            return student
+            carreras = _db.list_carreras()
+            return student, carreras
 
-    res = db_query()
-    return render_template("alumnos.html", result=res)
+    res, carr = db_query()
+    return render_template("alumnos.html", result=res, carreras=carr)
 
 
 @app.route("/del_alumno", methods=["POST"])
@@ -335,3 +341,234 @@ def search_profesor():
 
     res = db_query()
     return render_template("profesores.html", result=res)
+
+
+@app.route("/ecoas", methods=["GET", "POST"])
+def ecoas():
+    _db = db.Database()
+
+    def db_query():
+        if request.method == "GET":
+            survey = _db.list_ecoas()
+            return survey
+        else:
+            if request.method == "POST":
+                profesor = request.form["profesor"]
+                # clave = request.form["clave"]
+                curso = request.form["curso"]
+                grupo = request.form["grupo"]
+                semestre = request.form["semestre"]
+                year = request.form["year"]
+                calificacion = request.form["calificacion"]
+                if (
+                    profesor != ""
+                    # and clave != ""
+                    and curso != ""
+                    and grupo != ""
+                    and semestre != ""
+                    and year != ""
+                    and calificacion != ""
+                ):
+                    _db.insert_ecoas(
+                        profesor, curso, grupo, semestre, year, calificacion
+                    )
+
+            survey = _db.list_ecoas()
+            return survey
+
+    res = db_query()
+    return render_template("ecoas.html", result=res)
+
+
+@app.route("/del_ecoas", methods=["POST"])
+def del_ecoas():
+    def db_query():
+        if request.method == "POST":
+            _db = db.Database()
+            result = json.loads(request.data)
+            # print(result, file=sys.stdout)
+            for datum in result:
+                # print(datum[0], file=sys.stdout)
+                _db.delete_ecoas(datum[0], datum[1])
+
+        survey = _db.list_ecoas()
+        return survey
+
+    res = db_query()
+    return render_template("ecoas.html", result=res)
+
+
+@app.route("/search_ecoas", methods=["POST"])
+def search_ecoas():
+    def db_query():
+        if request.method == "POST":
+            _db = db.Database()
+            nomina = request.form["nomina"]
+            survey = _db.find_ecoas(nomina)
+            # print(students, file=sys.stdout)
+            return survey
+
+    res = db_query()
+    return render_template("ecoas.html", result=res)
+
+
+@app.route("/cursos_impartidos")
+def cursos_impartidos():
+    _db = db.Database()
+
+    def db_query():
+        impartidos = _db.list_impartidos()
+        return impartidos
+
+    res = db_query()
+    return render_template("cursos_impartidos.html", result=res)
+
+
+@app.route("/search_impartidos", methods=["POST"])
+def search_impartidos():
+    def db_query():
+        if request.method == "POST":
+            _db = db.Database()
+            nomina = request.form["nomina"]
+            cursos = _db.find_impartidos(nomina)
+            # print(students, file=sys.stdout)
+            return cursos
+
+    res = db_query()
+    return render_template("cursos_impartidos.html", result=res)
+
+
+@app.route("/grupos_alumno", methods=["GET", "POST"])
+def grupos_alumno():
+    def db_query():
+        _db = db.Database()
+        if request.method == "GET":
+            lista = _db.list_pertenece()
+            return lista
+        else:
+            if request.method == "POST":
+                matricula = request.form["matricula"]
+                curso = request.form["curso"]
+                grupo = request.form["grupo"]
+                semestre = request.form["semestre"]
+                year = request.form["year"]
+                if (
+                    matricula != ""
+                    and curso != ""
+                    and grupo != ""
+                    and semestre != ""
+                    and year != ""
+                ):
+                    _db.insert_pertenece(matricula, curso, grupo, semestre, year)
+
+            lista = _db.list_pertenece()
+            return lista
+
+    res = db_query()
+    return render_template("grupos_alumno.html", result=res)
+
+@app.route("/del_grupos_alumno", methods=["POST"])
+def del_grupos_alumno():
+    def db_query():
+        if request.method == "POST":
+            _db = db.Database()
+            result = json.loads(request.data)
+            # print(result, file=sys.stdout)
+            for datum in result:
+                # print(datum[0], file=sys.stdout)
+                _db.delete_pertenece(datum[0], datum[1], datum[2], datum[3])
+
+        survey = _db.list_ecoas()
+        return survey
+
+    res = db_query()
+    return render_template("grupos_alumno.html", result=res)
+
+@app.route("/cursos_cursados")
+def cursos_cursados():
+    _db = db.Database()
+
+    def db_query():
+        cursados = _db.list_cursados()
+        return cursados
+
+    res = db_query()
+    return render_template("cursos_cursados.html", result=res)
+
+@app.route("/search_cursados", methods=["POST"])
+def search_cursados():
+    def db_query():
+        if request.method == "POST":
+            _db = db.Database()
+            matricula = request.form["matricula"]
+            cursos = _db.find_cursados(matricula)
+            # print(students, file=sys.stdout)
+            return cursos
+
+    res = db_query()
+    return render_template("cursos_cursados.html", result=res)
+
+@app.route("/libre", methods=["GET", "POST"])
+def libre():
+    _db = db.Database()
+
+    def db_query():
+        if request.method == "GET":
+            horas = _db.list_libre()
+            return horas
+        else:
+            if request.method == "POST":
+                nomina = request.form["nomina"]
+                hora = request.form["hora"]
+                if nomina != "" and hora != "":
+                    _db.insert_libre(nomina, hora)
+                
+            horas = _db.list_libre()
+            return horas
+
+    res = db_query()
+    return render_template("libre.html", result=res)
+
+@app.route("/no_libre", methods=["POST"])
+def no_libre():
+    def db_query():
+        if request.method == "POST":
+            _db = db.Database()
+            nomina = json.loads(request.data)
+            nl = _db.list_no_libre(nomina)
+            print(nl, file=sys.stdout)
+
+            return nl
+
+    nl = db_query()
+    return json.dumps(nl)
+
+@app.route("/search_libre", methods=["POST"])
+def search_libre():
+    def db_query():
+        if request.method == "POST":
+            _db = db.Database()
+            nomina = request.form["nomina-search"]
+            horas = _db.find_libre(nomina)
+            # print(students, file=sys.stdout)
+            return horas
+
+    res = db_query()
+    return render_template("libre.html", result=res)
+
+@app.route("/del_libre", methods=["POST"])
+def del_libre():
+    def db_query():
+        if request.method == "POST":
+            _db = db.Database()
+            result = json.loads(request.data)
+            # print(result, file=sys.stdout)
+            for datum in result:
+                # print(datum[0], file=sys.stdout)
+                _db.delete_libre(datum[0], datum[1])
+
+        survey = _db.list_ecoas()
+        return survey
+
+    res = db_query()
+    return render_template("grupos_alumno.html", result=res)

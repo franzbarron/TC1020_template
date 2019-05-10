@@ -82,10 +82,10 @@ Ustedes tendrán que modificar `db.py`, `app.py` y agregar mas templates en el f
 - [x] Lista de profesores dada la nómina ordenado por nómina
 
 ### Queries mas complejos, dado un input:
-- [ ] Cursos por alumno (dada la matrícula de un alumno)
-- [ ] Nómina, nombre del profesor y los cursos que ha impartido o imparte un profesor dada la nómina del profesor.
-- [ ] Nómina y nombre del profesor con los horarios libres dado la nómina de un profesor.
-- [ ] Mostrar resultado de ECOAS con su número de curso, nombre, número de grupo, semestre y año dada la nómina de un profesor. Ordenado por año, semestre, número de curso y grupo.
+- [x] Cursos por alumno (dada la matrícula de un alumno)
+- [x] Nómina, nombre del profesor y los cursos que ha impartido o imparte un profesor dada la nómina del profesor.
+- [x] Nómina y nombre del profesor con los horarios libres dado la nómina de un profesor.
+- [x] Mostrar resultado de ECOAS con su número de curso, nombre, número de grupo, semestre y año dada la nómina de un profesor. Ordenado por año, semestre, número de curso y grupo.
 
 ### INSERTS
 - [x] Insertar un alumno

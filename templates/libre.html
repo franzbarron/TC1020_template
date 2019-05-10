@@ -5,28 +5,32 @@
 </style>
 
 <head>
-    <!-- <link rel="stylesheet" type="text/css" href="/static/styles.css"> -->
     <meta charset="UTF-8">
-    <title>Cursos</title>
+    <title>Horas Libres</title>
     <link rel="stylesheet" href="/static/spectre.min.css">
+    <link rel="stylesheet" href="/static/spectre-icons.min.css">
 </head>
 
 <body>
     <div class="container">
         <small><a href="/">Volver al inicio</a></small>
-        <h1>Cursos</h1>
+        <h1>Horas Libres</h1>
 
-        <div id="departamentos-list">
-            <h2>Lista de todos los cursos</h2>
+        <div id="libre-list">
+            <h2>Lista de todas las horas libres por profesor</h2>
+            <form action="{{ url_for('search_libre') }}" method="post" class="form">
+                <div class="input-group">
+                    <input type="search" class="form-input" name="nomina-search" id="nomina-search"
+                        placeholder="Buscar por n&oacute;mina">
+                    <button class="btn input-group-btn"><i class="form-icon icon icon-search"></i></button>
+                </div>
+            </form>
             <table class="table">
                 {% if result %}
                 <tr>
-                    <th>Clave</th>
+                    <th>N&oacute;mina</th>
                     <th>Nombre</th>
-                    <th>Descripci&oacute;n</th>
-                    <th>Horas por semana</th>
-                    <th>Semestre</th>
-                    <th>Departamento</th>
+                    <th>Hora</th>
                     <th class="delete-selector" style="display: none;">Eliminar</th>
                 </tr>
                 {% for row in result %}
@@ -34,12 +38,9 @@
                     <td>{{ row[0] }}</td>
                     <td>{{ row[1] }}</td>
                     <td>{{ row[2] }}</td>
-                    <td>{{ row[3] }}</td>
-                    <td>{{ row[4] }}</td>
-                    <td>{{ row[5] }}</td>
                     <td class="delete-selector" style="display: none;">
                         <div class="form-group">
-                            <input class="delete-check" type="checkbox" value="{{ row[0] }}">
+                            <input class="delete-check" type="checkbox" value="{{  row[0] }}-{{  row[2]  }}">
                         </div>
                     </td>
                 </tr>
@@ -59,31 +60,16 @@
         </div>
 
         <div id="insert-new" style="display: none;">
-            <h2>Insertar nuevo curso</h2>
-            <form action="{{ url_for('cursos')}}" method="post" class="form">
+            <h2>Insertar hora libre</h2>
+            <form action="{{ url_for('libre')}}" method="post" class="form">
                 <div class="form-group">
-                    <label class="form-label" for="numero">Clave:</label>
-                    <input class="form-input" type="text" name="numero" id="numero">
+                    <label class="form-label" for="nomina">N&oacute;mina</label>
+                    <input class="form-input" type="text" name="nomina" id="nomina">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="nombre">Nombre:</label>
-                    <input class="form-input" type="text" name="nombre" id="nombre">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="descripcion">Descripci&oacute;n:</label>
-                    <input class="form-input" type="text" name="descripcion" id="descripcion">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="horas-por-semana">Horas por semana:</label>
-                    <input class="form-input" type="number" name="horas-por-semana" id="horas-por-semana">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="semestre">Semestre:</label>
-                    <input class="form-input" type="number" name="semestre" id="semestre">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="departamento">Departamento:</label>
-                    <input class="form-input" type="text" name="departamento" id="departamento">
+                    <label class="form-label" for="hora">Hora:</label>
+                    <select class="form-input" name="hora" id="hora">
+                    </select>
                 </div>
                 <button class="btn btn-success" type="submit">Insertar</button>
                 <button id="cancel-insert" class="btn btn-error">Cancelar</button>
@@ -91,6 +77,7 @@
         </div>
     </div>
     <script>
+        const LIBRE_LIST = document.querySelector('#libre-list');
         const CANCEL_DELETE = document.querySelector('#cancel-delete');
         const CANCEL_INSERT = document.querySelector('#cancel-insert');
         const DEFAULT_BTNS = document.querySelector('#default-btns');
@@ -99,9 +86,9 @@
         const DELETE_CHECK = document.querySelectorAll('.delete-check');
         const DELETE_CONFIRM = document.querySelector('#delete-confirm')
         const DELETE_SELECTOR = document.querySelectorAll('.delete-selector');
-        const DEPARTAMENTOS_LIST = document.querySelector('#departamentos-list');
         const INSERT_BTN = document.querySelector('#insert-btn');
         const INSERT_NEW = document.querySelector('#insert-new');
+        const NOMINA = document.querySelector('#nomina');
 
         CANCEL_DELETE.addEventListener('click', event => {
             DELETE_SELECTOR.forEach(cell => {
@@ -113,7 +100,7 @@
 
         CANCEL_INSERT.addEventListener('click', event => {
             DEFAULT_BTNS.style.display = '';
-            DEPARTAMENTOS_LIST.style.display = '';
+            LIBRE_LIST.style.display = '';
             INSERT_NEW.style.display = 'none';
         });
 
@@ -128,23 +115,41 @@
         DELETE_CONFIRM.addEventListener('click', event => {
             let checks = [];
             DELETE_CHECK.forEach(check => {
-                if (check.checked)
-                    checks.push(check.value);
+                if (check.checked) {
+                    const tokens = check.value.split('-');
+                    checks.push(tokens);
+                }
             });
 
-            fetch('/del_curso', {
+            fetch('/del_libre', {
                 method: 'POST',
                 body: JSON.stringify(checks)
             }).then(response => {
                 location.reload();
             })
-        })
+        });
 
         INSERT_BTN.addEventListener('click', event => {
             DEFAULT_BTNS.style.display = 'none';
-            DEPARTAMENTOS_LIST.style.display = 'none';
+            LIBRE_LIST.style.display = 'none';
             INSERT_NEW.style.display = '';
         });
+
+        NOMINA.addEventListener('change', event => {
+            fetch('/no_libre', {
+                method: 'POST',
+                body: JSON.stringify(NOMINA.value)
+            }).then(res => res.json()).then(res => {
+                console.log(res)
+                const HORA = document.querySelector('#hora');
+                res.forEach(hora => {
+                    const OPTION = document.createElement('option');
+                    OPTION.setAttribute('value', hora[0]);
+                    OPTION.textContent = hora[1];
+                    HORA.appendChild(OPTION);
+                });
+            })
+        })
 
     </script>
 </body>

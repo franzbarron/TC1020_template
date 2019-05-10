@@ -3,7 +3,7 @@
 
 <head>
     <title>Base de Datos | Tecnol&oacute;gico de Monterrey</title>
-    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
+    <link rel="stylesheet" href="/static/spectre.min.css">
 </head>
 
 <body>
@@ -15,6 +15,11 @@
             <li><a href="{{ url_for('departamentos') }}">Departamentos</a></li>
             <li><a href="{{ url_for('grupos') }}">Grupos</a></li>
             <li><a href="{{ url_for('profesores') }}">Profesores</a></li>
+            <li><a href="{{ url_for('ecoas') }}">Resultados de Ecoas</a></li>
+            <li><a href="{{ url_for('cursos_impartidos') }}">Cursos impartidos por profesor</a></li>
+            <li><a href="{{ url_for('grupos_alumno') }}">Grupos a los que est&aacute; inscrito un alumo</a></li>
+            <li><a href="{{ url_for('cursos_cursados') }}">Cursos cursados por estudiante</a></li>
+            <li><a href="{{ url_for('libre') }}">Horas libres por profesor</a></li>
         </ul>
     </div>
 
